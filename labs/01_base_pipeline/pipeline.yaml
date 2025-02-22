@@ -1,12 +1,35 @@
 apiVersion: tekton.dev/v1beta1
-kind: Task
+kind: Pipeline
 metadata:
-  name: hello-world
+  name: hello-pipeline
 spec:
-  steps:
-    - name: echo
-      image: alpine:3
-      command:
-        - /bin/echo
-      args:
-        - Hello World
+  params:
+    - name: message
+  tasks:
+    - name: hello
+      taskRef:
+        name: echo
+      params:
+        - name: message
+          value: $(params.message)
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cd-pipeline
+spec:
+  params:
+    - name: repo-url
+    - name: branch
+      default: main
+  tasks:
+    - name: clone
+      taskRef:
+        name: checkout
+      params:
+        - name: repo-url
+          value: $(params.repo-url)
+        - name: branch
+          value: $(params.branch)
