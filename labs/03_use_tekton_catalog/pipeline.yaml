@@ -3,18 +3,23 @@ kind: Pipeline
 metadata:
   name: cd-pipeline
 spec:
+  workspaces:
+    - name: pipeline-workspace
   params:
     - name: repo-url
     - name: branch
       default: main
   tasks:
     - name: clone
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
       taskRef:
-        name: checkout
+        name: git-clone
       params:
-        - name: repo-url
+        - name: url
           value: $(params.repo-url)
-        - name: branch
+        - name: revision
           value: $(params.branch)
 
     - name: lint
@@ -40,7 +45,7 @@ spec:
         name: echo
       params:
         - name: message
-          value: Building image for $(params.repo-url)...
+          value: Building image for $(params.repo-url) ...
       runAfter:
         - tests
 
@@ -49,6 +54,6 @@ spec:
         name: echo
       params:
         - name: message
-          value: Deploying $(params.branch) branch of $(params.repo-url)...
+          value: Deploying $(params.branch) branch of $(params.repo-url) ...
       runAfter:
         - build
