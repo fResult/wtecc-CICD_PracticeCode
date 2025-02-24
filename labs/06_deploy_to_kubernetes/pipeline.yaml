@@ -1,3 +1,4 @@
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: cd-pipeline
@@ -5,6 +6,7 @@ spec:
   workspaces:
     - name: pipeline-workspace
   params:
+    - name: app-name
     - name: build-image
     - name: repo-url
     - name: branch
@@ -71,9 +73,11 @@ spec:
 
     - name: deploy
       taskRef:
-        name: echo
+        name: openshift-client
+        kind: ClusterTask
       params:
-      - name: message
-        value: Deploying $(params.branch) branch of $(params.repo-url) ...
+      - name: SCRIPT
+        value: |
+          oc create deploy $(params.app-name) --image=$(params.build-image)
       runAfter:
         - build
